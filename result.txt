@@ -10,9 +10,64 @@ START: DADD R4, R4, R1    13  14    16    17    N      N      N      N
 DSUBI R3, R3, 1           14  15    17    18    N      N      N      N
 BNE  R3, R5, START        15  18                Y      N      N      N
 SW R4, 256(R2)            18                    N      N      N      N
-START: DADD R4, R4, R1    13  14    16    17    N      N      N      N
-DSUBI R3, R3, 1           14  15    17    18    N      N      N      N
-BNE  R3, R5, START        15
+START: DADD R4, R4, R1    19  20    22    23    N      N      N      N
+DSUBI R3, R3, 1           20  21    23    24    N      N      N      N
+BNE  R3, R5, START        21  24                Y      N      N      N
+SW R4, 256(R2)            24                    N      N      N      N
+START: DADD R4, R4, R1    25  26    28    29    N      N      N      N
+DSUBI R3, R3, 1           26  27    29    30    N      N      N      N
+BNE  R3, R5, START        27  30                Y      N      N      N
+SW R4, 256(R2)            30                    N      N      N      N
+START: DADD R4, R4, R1    31  32    34    35    N      N      N      N
+DSUBI R3, R3, 1           32  33    35    36    N      N      N      N
+BNE  R3, R5, START        33  36                Y      N      N      N
+SW R4, 256(R2)            36                    N      N      N      N
+START: DADD R4, R4, R1    37  38    40    41    N      N      N      N
+DSUBI R3, R3, 1           38  39    41    42    N      N      N      N
+BNE  R3, R5, START        39  42                Y      N      N      N
+SW R4, 256(R2)            42                    N      N      N      N
+START: DADD R4, R4, R1    43  44    46    47    N      N      N      N
+DSUBI R3, R3, 1           44  45    47    48    N      N      N      N
+BNE  R3, R5, START        45  48                Y      N      N      N
+SW R4, 256(R2)            48                    N      N      N      N
+START: DADD R4, R4, R1    49  50    52    53    N      N      N      N
+DSUBI R3, R3, 1           50  51    53    54    N      N      N      N
+BNE  R3, R5, START        51  54                Y      N      N      N
+SW R4, 256(R2)            54                    N      N      N      N
+START: DADD R4, R4, R1    55  56    58    59    N      N      N      N
+DSUBI R3, R3, 1           56  57    59    60    N      N      N      N
+BNE  R3, R5, START        57  60                Y      N      N      N
+SW R4, 256(R2)            60                    N      N      N      N
+START: DADD R4, R4, R1    61  62    64    65    N      N      N      N
+DSUBI R3, R3, 1           62  63    65    66    N      N      N      N
+BNE  R3, R5, START        63  66                Y      N      N      N
+SW R4, 256(R2)            66                    N      N      N      N
+START: DADD R4, R4, R1    67  68    70    71    N      N      N      N
+DSUBI R3, R3, 1           68  69    71    72    N      N      N      N
+BNE  R3, R5, START        69  72                Y      N      N      N
+SW R4, 256(R2)            72                    N      N      N      N
+START: DADD R4, R4, R1    73  74    76    77    N      N      N      N
+DSUBI R3, R3, 1           74  75    77    78    N      N      N      N
+BNE  R3, R5, START        75  78                Y      N      N      N
+SW R4, 256(R2)            78                    N      N      N      N
+START: DADD R4, R4, R1    79  80    82    83    N      N      N      N
+DSUBI R3, R3, 1           80  81    83    84    N      N      N      N
+BNE  R3, R5, START        81  84                Y      N      N      N
+SW R4, 256(R2)            84                    N      N      N      N
+START: DADD R4, R4, R1    85  86    88    89    N      N      N      N
+DSUBI R3, R3, 1           86  87    89    90    N      N      N      N
+BNE  R3, R5, START        87  90                Y      N      N      N
+SW R4, 256(R2)            90                    N      N      N      N
+START: DADD R4, R4, R1    91  92    94    95    N      N      N      N
+DSUBI R3, R3, 1           92  93    95    96    N      N      N      N
+BNE  R3, R5, START        93  96                Y      N      N      N
+SW R4, 256(R2)            96                    N      N      N      N
+START: DADD R4, R4, R1    97  98    100   101   N      N      N      N
+DSUBI R3, R3, 1           98  99    101   102   N      N      N      N
+BNE  R3, R5, START        99  102               Y      N      N      N
+SW R4, 256(R2)           102  103   106   107   N      N      N      N
+HLT                      103  104               N      N      N      N
+HLT                      104
 
 
 Total number of access requests for instruction cache: 0

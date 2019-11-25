@@ -28,13 +28,12 @@ g.Init()  # Init Global Variables
 
 
 # * Reading Data File
-data = {}
 with open(dataFile,'r') as c:
     dLines = c.readlines()
-    memAddr = 100  # As of now this is in decimal
+    memAddr = 256  # As of now this is in decimal , equivalant to 0x100
     for d in dLines:
         d = d.replace("\n","")
-        data[str(memAddr)] = d
+        g.data[str(memAddr)] = d
         memAddr = memAddr + 4
 # print(data)
 
@@ -106,10 +105,10 @@ with open(instFile,'r') as c:
 # * I-Cache
 # initI_Cache()
         
-
-copyOfInstruction = copy.deepcopy(instructions)
+copyOfInstructions = copy.deepcopy(instructions)
+instrsCopy = copy.deepcopy(copyOfInstructions)
 loopBodyInstructions = {}
-loopBodyInstructions = findLoops(copyOfInstruction,loopBodyInstructions,labaels_dict)
+loopBodyInstructions = findLoops(instrsCopy,loopBodyInstructions,labaels_dict)
 
 
 # * Simulate 
@@ -186,8 +185,9 @@ while(cntinue):
                                 g.IDStage.IsBusy = False
                                 g.IDStage.InstrResponsibleUniqueCode = ''
 
-                                instructions = resetRemainingInstructions(index+1,instructions,copyOfInstruction)
-                                instructions[index+2:1]=loopBodyInstructions[inst.operand3]
+                                instructions = resetRemainingInstructions(index+1,instructions,copyOfInstructions)
+                                instructions[index+2:1]=copy.deepcopy(loopBodyInstructions[inst.operand3])
+                                copyOfInstructions = copy.deepcopy(instructions)
                                 instructions[index+1].FT = cycleCount
                                 instructions[index+1].currentStage = 'DONE'
 

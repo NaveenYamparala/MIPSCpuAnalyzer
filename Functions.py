@@ -117,7 +117,7 @@ def RepresentsInt(s):
         return False
 
 def doCalculationIfRequired(instr):
-    if(not instr.name.endswith('.D')): # .D must use FP registers. So not .D uses intger register
+    if(not instr.name.endswith('.D')): # .D must use FP registers. So not .D uses integer register
         if(instr.name.startswith('B')): # Branching instruction
             if(instr.name == 'BNE'):
                 op1 = g.Registers[int(instr.operand1[1])].data
@@ -136,78 +136,99 @@ def doCalculationIfRequired(instr):
         if(instr.name == 'J'):
                 return 'TAKEN'
         if(instr.name == 'LW'):
-            return #! TODO
+            resReg = g.Registers[int(instr.operand1[1])]
+            op2 = instr.operand2
+            op3 = g.Registers[int(instr.operand3[1])].data
+            address = int(op2) + twosComplToDec(op3)
+            data = g.data[str(address)]
+            resReg.data = data
+            return 
         if(instr.name == 'SW'):
-            return #! TODO
+            op2 = instr.operand2
+            op3 = g.Registers[int(instr.operand3[1])].data
+            resAddress = int(op2) + twosComplToDec(op3)
+            resData = g.Registers[int(instr.operand1[1])].data
+            g.data[str(resAddress)] = resData
+            return 
         if(instr.name.find('ADD') != -1):
             if(instr.name == "DADDI"):
                 op2 = g.Registers[int(instr.operand2[1])].data # In binary
                 op3 = int(instr.operand3[0]) # In decimal
-                result = int(op2,2) + int(op3) # result is integer
-                result = '{:032b}'.format(result)
+                result = twosComplToDec(op2) + int(op3) # result is integer
+                # result = '{:032b}'.format(result)
+                result = decToTwosCompl(result)
                 g.Registers[int(instr.operand1[1])].data = result
-            else:
+            else: # DADD
                 op2 = g.Registers[int(instr.operand2[1])].data # In binary
                 op3 = g.Registers[int(instr.operand3[1])].data # In binary
-                result = int(op2,2) + int(op3,2) # result is integer
-                result = '{:032b}'.format(result)
+                result = twosComplToDec(op2) + twosComplToDec(op3) # result is integer
+                # result = '{:032b}'.format(result)
+                result = decToTwosCompl(result)
                 g.Registers[int(instr.operand1[1])].data = result
             return
         if(instr.name.find('SUB') != -1):
             if(instr.name == "DSUBI"):
                 op2 = g.Registers[int(instr.operand2[1])].data # In binary
                 op3 = int(instr.operand3[0]) # In decimal
-                result = int(op2,2) - int(op3) # result is integer
-                result = '{:032b}'.format(result)
+                result = twosComplToDec(op2) - int(op3) # result is integer
+                # result = '{:032b}'.format(result)
+                result = decToTwosCompl(result)
                 g.Registers[int(instr.operand1[1])].data = result
-            else:
+            else: #DSUB
                 op2 = g.Registers[int(instr.operand2[1])].data # In binary
                 op3 = g.Registers[int(instr.operand3[1])].data # In binary
-                result = int(op2,2) - int(op3,2) # result is integer
-                result = '{:032b}'.format(result)
+                result = twosComplToDec(op2) - twosComplToDec(op3) # result is integer
+                # result = '{:032b}'.format(result)
+                result = decToTwosCompl(result)
                 g.Registers[int(instr.operand1[1])].data = result
             return
         if(instr.name.find('AND') != -1):
             if(instr.name == "ANDI"):
                 op2 = g.Registers[int(instr.operand2[1])].data # In binary
                 op3 = int(instr.operand3[0]) # In decimal
-                result = int(op2,2) & int(op3) # result is integer
-                result = '{:032b}'.format(result)
+                result = twosComplToDec(op2) & int(op3) # result is integer
+                # result = '{:032b}'.format(result)
+                result = decToTwosCompl(result)
                 g.Registers[int(instr.operand1[1])].data = result
-            else:
+            else: #AND
                 op2 = g.Registers[int(instr.operand2[1])].data # In binary
                 op3 = g.Registers[int(instr.operand3[1])].data # In binary
-                result = int(op2,2) & int(op3,2) # result is integer
-                result = '{:032b}'.format(result)
+                result = twosComplToDec(op2) & twosComplToDec(op3) # result is integer
+                # result = '{:032b}'.format(result)
+                result = decToTwosCompl(result)
                 g.Registers[int(instr.operand1[1])].data = result
             return
         if(instr.name.find('OR') != -1):
             if(instr.name == "ORI"):
                 op2 = g.Registers[int(instr.operand2[1])].data # In binary
                 op3 = int(instr.operand3[0]) # In decimal
-                result = int(op2,2) | int(op3) # result is integer
-                result = '{:032b}'.format(result)
+                result = twosComplToDec(op2) | int(op3) # result is integer
+                # result = '{:032b}'.format(result)
+                result = decToTwosCompl(result)
                 g.Registers[int(instr.operand1[1])].data = result
-            else:
+            else: #OR
                 op2 = g.Registers[int(instr.operand2[1])].data # In binary
                 op3 = g.Registers[int(instr.operand3[1])].data # In binary
-                result = int(op2,2) | int(op3,2) # result is integer
-                result = '{:032b}'.format(result)
+                result = twosComplToDec(op2) | twosComplToDec(op3) # result is integer
+                # result = '{:032b}'.format(result)
+                result = decToTwosCompl(result)
                 g.Registers[int(instr.operand1[1])].data = result
             return
 
 def resetRemainingInstructions(startIndex,instructions,instructions_copy):
     sliced_instrs = copy.deepcopy(instructions_copy[startIndex:])
-    del instructions[startIndex+1:]
+    del instructions[startIndex:]
     instructions.extend(sliced_instrs)
     return instructions
 
+
+# finds loops and returns loop + 1 instructions
 def findLoops(instrs,loopInstrs,lbls_dict):
     for lbl,lbl_index in lbls_dict.items():
         for index,i in enumerate(instrs):
             if(i.name.startswith('B')):
                 if(i.operand3 == lbl):
-                    loopInstrs[lbl] = instrs[lbl_index:index+1]
+                    loopInstrs[lbl] = instrs[lbl_index:index+2]
     return loopInstrs
 
 def initI_Cache():
@@ -234,6 +255,18 @@ def checkInstrCache(instr):
             val.append(data)
         g.ICache[blockNumber] = val
         return 2 * (g.config.iCacheCycles + g.config.memCycles)
+
+def decToTwosCompl(decimal):
+    s = bin(decimal & int("1"*32, 2))[2:]
+    return ("{0:0>%s}" % (32)).format(s)
+
+def twosComplToDec(binary_string):
+    val = int(binary_string,2)
+    bits = len(binary_string)
+    """compute the 2's complement of int value val"""
+    if (val & (1 << (bits - 1))) != 0: # if sign bit is set e.g., 8bit: 128-255
+        val = val - (1 << bits)        # compute negative value
+    return val 
 
 
 

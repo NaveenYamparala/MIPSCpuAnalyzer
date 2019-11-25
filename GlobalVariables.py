@@ -2,7 +2,7 @@
 from Classes import *
 
 def Init():
-    global config
+    global config,data
     global ICache
     global IntUnitStatus
     # global MemUnitBusy
@@ -27,6 +27,7 @@ def Init():
     WBStage = StageInfo(False,'')
     IU = StageInfo(False,'')
     ICache = {}
+    data = {}
     Registers = []
     FRegisters = []
     instructionCacheRequests = 0
