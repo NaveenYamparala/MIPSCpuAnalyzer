@@ -72,6 +72,7 @@ with open(instFile,'r') as c:
     for index,i in enumerate(instrLines):
         i = i.replace('\n','')
         i = i.replace('\t','')
+        i = i.upper()
         if(len(i) != 0):
             i = i.strip()
             if(i.find(":") == -1): # instruction doesn't have label  ADD.D F4, F6, F2
@@ -103,7 +104,7 @@ with open(instFile,'r') as c:
             hex_address = hex(int(hex_address,16) + 4)
 
 # * I-Cache
-initI_Cache()
+# initI_Cache()
         
 
 copyOfInstruction = copy.deepcopy(instructions)
@@ -123,7 +124,7 @@ while(cntinue):
         end = 0
         if(inst.currentStage == 'DONE'):
             doneCount += 1
-            if(doneCount == (len(instructions)-2)):
+            if(doneCount == (len(instructions))):
                 cntinue = False
             continue
 
@@ -132,19 +133,14 @@ while(cntinue):
             if(g.FTStage.IsBusy and g.FTStage.InstrResponsibleUniqueCode != inst.instrUniqueCode):
                 continue # Can't go to FT Stage
             else: 
-                # if(inst.name == 'HLT'):
-                #     break
-                if(inst.FTCycleCount == 0 ): # Will execute once per instr # and (index == 0 or instructions[index-1].name != 'HLT')
-                    inst.FTCycleCount = checkInstrCache(inst)
+                # if(inst.FTCycleCount == 0 ): # Will execute once per instr # and (index == 0 or instructions[index-1].name != 'HLT')
+                #     inst.FTCycleCount = checkInstrCache(inst)
 
                 inst.currentStage = 'FT'
                 inst.FTCycleCount -= 1
 
                 g.FTStage.IsBusy = True
                 g.FTStage.InstrResponsibleUniqueCode = inst.instrUniqueCode
-
-                # # Setting the Result registers to Busy  (for RAW Hazard)
-                # toggleResultRegisterStatus(inst)
 
                 if(inst.FTCycleCount == 0):
                     inst.prevStage = 'FT'
@@ -165,9 +161,6 @@ while(cntinue):
                     inst.FT = cycleCount - 1
                     inst.currentStage = 'ID'
 
-                # # Setting the Result registers to Busy  (for RAW Hazard)
-                # toggleResultRegisterStatus(inst)
-
                 inst.currentStage = 'ID'
                 inst.IDCycleCount -= 1
 
@@ -180,14 +173,19 @@ while(cntinue):
                         inst.prevStage = 'ID'
 
                         if(inst.ExCycleCount == 'Nan'): # i.e instruction is HLT or BNE or BEQ or J
-                            inst.currentStage = 'DONE'
+                            # inst.currentStage = 'DONE'
 
-                            g.IDStage.IsBusy = False
-                            g.IDStage.InstrResponsibleUniqueCode = ''
+                            # g.IDStage.IsBusy = False
+                            # g.IDStage.InstrResponsibleUniqueCode = ''
 
                             output = doCalculationIfRequired(inst)
 
                             if(output == 'TAKEN'):
+                                inst.currentStage = 'DONE'
+
+                                g.IDStage.IsBusy = False
+                                g.IDStage.InstrResponsibleUniqueCode = ''
+
                                 instructions = resetRemainingInstructions(index+1,instructions,copyOfInstruction)
                                 instructions[index+2:1]=loopBodyInstructions[inst.operand3]
                                 instructions[index+1].FT = cycleCount
@@ -206,18 +204,8 @@ while(cntinue):
                                 g.FPDivisionUnitStatus.IsBusy = False
                                 g.FPMultiplicationUnitStatus.IsBusy = False
 
-
-                                # inst.ID = cycleCount
-                                # continue
-                                # instructions.extend(loopBodyInstructions)
-
-                            # #! TODO:Remove this line later
-                            # if(inst.name == 'BNE' and len(loopBodyInstructions) != 0 ):
-                            #     instructions.extend(loopBodyInstructions)
-                            #     loopBodyInstructions = []
-
-                            inst.ID = cycleCount # ID cycleCount is done here to accycleCount for stalls in ID stage
-                            break
+                                inst.ID = cycleCount # ID cycleCount is done here to accycleCount for stalls in ID stage
+                                break
                     else:
                         inst.RAW = 'Y'
                     continue
@@ -263,6 +251,14 @@ while(cntinue):
                         inst.prevStage = 'EXE'
 
             else: ## EXE Stage = ( EXE )
+                if(inst.ExCycleCount == 'Nan'):
+                    inst.ID = cycleCount-1
+                    inst.currentStage = 'DONE'
+
+                    g.IDStage.IsBusy = False
+                    g.IDStage.InstrResponsibleUniqueCode = ''
+                    continue
+
                 if(not checkIfFunctionalUnitBusy(inst)):
                     inst.ExCycleCount -= 1
                     if(inst.currentStage != 'EXE'):

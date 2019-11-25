@@ -45,56 +45,69 @@ def checkIfFunctionalUnitBusy(instr):
 
 def setResultRegisterStatus(instr,status):
     if(instr.resultRegisterType == 'R'):
-        # print(g.Registers[instr.resultRegisterNumber].isBusy)
-        if(status != g.Registers[instr.resultRegisterNumber].isBusy): # written because of BNE,DSUB issue without memory 
-            g.Registers[instr.resultRegisterNumber].isBusy = status
-            g.Registers[instr.resultRegisterNumber].instrResponsible = instr.full_instr
-        # print(g.Registers[instr.resultRegisterNumber].isBusy)
+        resultReg = g.Registers[instr.resultRegisterNumber]
+        if(status == resultReg.isBusy): 
+            resultReg.instructionsResponsible.append(instr.instrUniqueCode)
+        else:
+            if(status == True):
+                resultReg.isBusy = status
+                resultReg.instructionsResponsible = [instr.instrUniqueCode]
+            else:
+                resultReg.instructionsResponsible.remove(instr.instrUniqueCode)
+                if(len(resultReg.instructionsResponsible) == 0):
+                    resultReg.isBusy = status
+
     if(instr.resultRegisterType == 'F'):
-        if(status != g.FRegisters[instr.resultRegisterNumber].isBusy):
-            g.FRegisters[instr.resultRegisterNumber].isBusy = status
-            g.FRegisters[instr.resultRegisterNumber].instrResponsible = instr.full_instr
+        resultReg = g.FRegisters[instr.resultRegisterNumber]
+        if(status == resultReg.isBusy): 
+            resultReg.instructionsResponsible.append(instr.instrUniqueCode)
+        else:
+            if(status == True):
+                resultReg.isBusy = status
+                resultReg.instructionsResponsible = [instr.instrUniqueCode]
+            else:
+                resultReg.instructionsResponsible.remove(instr.instrUniqueCode)
+                if(len(resultReg.instructionsResponsible) == 0):
+                    resultReg.isBusy = status
 
 def checkIfOperandsAreBusy(instr):
-    reg2 = False
-    reg3 = False
+    reg2Status = False
+    reg3Status = False
     if(instr.name in ['J','HLT']):
         return False
     if(instr.name[0].upper() == 'B'):
         if(instr.operand2[0].upper() in ['F','R'] and RepresentsInt(instr.operand2[1])):
             if(instr.operand2[0].upper() == 'R'):
-                reg2 = g.Registers[int(instr.operand2[1])].isBusy and (not g.Registers[int(instr.operand2[1])].instrResponsible == instr.full_instr)
+                op2RRegister = g.Registers[int(instr.operand2[1])]
+                reg2Status = op2RRegister.isBusy and not (instr.instrUniqueCode in op2RRegister.instructionsResponsible and op2RRegister.instructionsResponsible.index(instr.instrUniqueCode) in [0])
             else:
-                reg2 = g.FRegisters[int(instr.operand2[1])].isBusy and (not g.FRegisters[int(instr.operand2[1])].instrResponsible == instr.full_instr)
+                op2FRegister = g.FRegisters[int(instr.operand2[1])]
+                reg2Status = op2FRegister.isBusy and not (instr.instrUniqueCode in op2FRegister.instructionsResponsible and op2FRegister.instructionsResponsible.index(instr.instrUniqueCode) in [0])
         
         if(instr.operand1[0].upper() in ['F','R'] and RepresentsInt(instr.operand1[1])):
             if(instr.operand1[0].upper() == 'R'):
-                reg3 = g.Registers[int(instr.operand1[1])].isBusy and (not g.Registers[int(instr.operand1[1])].instrResponsible == instr.full_instr)
+                op1RRegister = g.Registers[int(instr.operand1[1])]
+                reg3Status = op1RRegister.isBusy and not (instr.instrUniqueCode in op1RRegister.instructionsResponsible and op1RRegister.instructionsResponsible.index(instr.instrUniqueCode) in [0])
             else:
-                reg3 = g.FRegisters[int(instr.operand1[1])].isBusy and (not g.FRegisters[int(instr.operand1[1])].instrResponsible == instr.full_instr)
+                op1FRegister = g.FRegisters[int(instr.operand1[1])]
+                reg3Status = op1FRegister.isBusy and not (instr.instrUniqueCode in op1FRegister.instructionsResponsible and op1FRegister.instructionsResponsible.index(instr.instrUniqueCode) in [0])
     else:
         if(instr.operand2[0].upper() in ['F','R'] and RepresentsInt(instr.operand2[1])):
             if(instr.operand2[0].upper() == 'R'):
-                reg2 = g.Registers[int(instr.operand2[1])].isBusy and (not g.Registers[int(instr.operand2[1])].instrResponsible == instr.full_instr)
+                op2RRegister = g.Registers[int(instr.operand2[1])]
+                reg2Status = op2RRegister.isBusy and not (instr.instrUniqueCode in op2RRegister.instructionsResponsible and op2RRegister.instructionsResponsible.index(instr.instrUniqueCode) in [0])
             else:
-                reg2 = g.FRegisters[int(instr.operand2[1])].isBusy and (not g.FRegisters[int(instr.operand2[1])].instrResponsible == instr.full_instr)
+                op2FRegister = g.FRegisters[int(instr.operand2[1])]
+                reg2Status = op2FRegister.isBusy and not (instr.instrUniqueCode in op2FRegister.instructionsResponsible and op2FRegister.instructionsResponsible.index(instr.instrUniqueCode) in [0])
             
         if(instr.operand3[0].upper() in ['F','R'] and RepresentsInt(instr.operand3[1])):
             if(instr.operand3[0].upper() == 'R'):
-                reg3 = g.Registers[int(instr.operand3[1])].isBusy and (not g.Registers[int(instr.operand3[1])].instrResponsible == instr.full_instr)
+                op3RRegister = g.Registers[int(instr.operand3[1])]
+                reg3Status = op3RRegister.isBusy and not (instr.instrUniqueCode in op3RRegister.instructionsResponsible and op3RRegister.instructionsResponsible.index(instr.instrUniqueCode) in [0])
             else:
-                reg3 = g.FRegisters[int(instr.operand3[1])].isBusy and (not g.FRegisters[int(instr.operand3[1])].instrResponsible == instr.full_instr)
-    return reg2 or reg3
-
-# def IsExeStageBusy(instr):
-#     if(instr.FuncUnitUsed == "INT"):
-#         return g.IntUnitBusy
-#     if(instr.FuncUnitUsed == "FP ADDER"):
-#         return g.FPAddSubUnitBusy
-#     if(instr.FuncUnitUsed == "FP MULTIPLIER"):
-#         return g.FPMultiplicationUnitBusy
-#     if(instr.FuncUnitUsed == "FP DIVIDER"):
-#         return g.FPDivisionUnitBusy
+                op3FRegister = g.FRegisters[int(instr.operand3[1])]
+                reg3Status = op3FRegister.isBusy and not (instr.instrUniqueCode in op3FRegister.instructionsResponsible and op3FRegister.instructionsResponsible.index(instr.instrUniqueCode) in [0])
+    return reg2Status or reg3Status
 
 def RepresentsInt(s):
     try: 

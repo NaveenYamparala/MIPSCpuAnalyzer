@@ -1,0 +1,19 @@
+Instruction               FT  ID    EX    WB    RAW    WAR    WAW    Struct
+LW R1, 256(R2)             1  2     5     6     N      N      N      N
+LW R3, 260(R2)             2  3     7     8     N      N      N      Y
+LW R5, 264(R2)             3  4     9     10    N      N      N      Y
+START: DADD R4, R4, R1     4  6     10    11    Y      N      N      Y
+DSUBI R3, R3, 1            6  8     11    12    Y      N      N      Y
+BNE  R3, R5, START         8  12                Y      N      N      N
+SW R4, 256(R2)            12                    N      N      N      N
+START: DADD R4, R4, R1    13  14    16    17    N      N      N      N
+DSUBI R3, R3, 1           14  15    17    18    N      N      N      N
+BNE  R3, R5, START        15  18                Y      N      N      N
+SW R4, 256(R2)            18                    N      N      N      N
+START: DADD R4, R4, R1    13  14    16    17    N      N      N      N
+DSUBI R3, R3, 1           14  15    17    18    N      N      N      N
+BNE  R3, R5, START        15
+
+
+Total number of access requests for instruction cache: 0
+Number of instruction cache hits: 0

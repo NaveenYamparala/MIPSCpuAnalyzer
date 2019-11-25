@@ -1,0 +1,9 @@
+       LW R1, 256(R2)
+       LW R3, 260(R2)
+       LW R5, 264(R2)
+Start: DADD R4, R4, R1
+       DSUBI R3, R3, 1
+       BNE  R3, R5, start
+       SW R4, 256(R2)
+HLT
+HLT

@@ -24,7 +24,7 @@ class Instruction:
         self.ID = ''
         self.EX = ''
         self.WB = ''
-        self.FTCycleCount = 0
+        self.FTCycleCount = 1
         self.IDCycleCount = 1
         self.ExCycleCount = self.findCycleCount(self.name,config) 
         self.FuncUnitUsed = self.findFU(self.name)
@@ -97,7 +97,7 @@ class Register:
     def __init__(self,data):
         self.data = data
         self.isBusy = False
-        self.instrResponsible = ''
+        self.instructionsResponsible = []
 
 class StageInfo:
     def __init__(self,IsBusy,instr):
