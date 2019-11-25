@@ -20,9 +20,6 @@ regFile = "reg.txt"
 configFile = "config.txt"
 resultFile = "result.txt"
 
-# * Constants
-resultLine = ['Instruction','FT','ID','EX','WB','RAW','WAR','WAW','Struct']
-
 
 g.Init()  # Init Global Variables
 
@@ -219,9 +216,10 @@ while(cntinue):
                 if(inst.prevStage == 'ID' and inst.currentStage == 'ID' and not g.IU.IsBusy):
 
                     #Releasing ID stage
-                    g.IDStage.IsBusy = False
-                    g.IDStage.InstrResponsibleUniqueCode = ''
-                    inst.ID = cycleCount-1
+                    if(inst.ID == ''):
+                        g.IDStage.IsBusy = False
+                        g.IDStage.InstrResponsibleUniqueCode = ''
+                        inst.ID = cycleCount-1
 
                     inst.currentStage = 'IU'
 
@@ -239,8 +237,10 @@ while(cntinue):
                     inst.currentStage = 'MEM'
 
                     # Releasing IU
-                    g.IU.IsBusy = False
-                    g.IU.InstrResponsibleUniqueCode = ''
+                    if(inst.IU == ""):
+                        inst.IU = cycleCount -1
+                        g.IU.IsBusy = False
+                        g.IU.InstrResponsibleUniqueCode = ''
 
                     # Occupying MEM
                     g.MemStage.IsBusy = True
@@ -314,6 +314,7 @@ while(cntinue):
 
 
 # * Writing to Result file
+resultLine = ['Instruction','FT','ID','EX','WB','RAW','WAR','WAW','Struct']
 with open(resultFile,'w') as r:
     bigArr = []
     for index,i in enumerate(instructions):
@@ -322,6 +323,7 @@ with open(resultFile,'w') as r:
         arr.append(str(i.FT))
         if(index != len(instructions)-1):
             arr.append(str(i.ID))
+            # arr.append(str(i.IU))
             arr.append('' if i.EX == 0 else str(i.EX))
             arr.append('' if i.WB == 0 else str(i.WB))
             arr.append(str(i.RAW))

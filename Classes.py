@@ -22,6 +22,7 @@ class Instruction:
         self.Struct = "N"
         self.FT = ''
         self.ID = ''
+        self.IU = ''
         self.EX = ''
         self.WB = ''
         self.FTCycleCount = 1
