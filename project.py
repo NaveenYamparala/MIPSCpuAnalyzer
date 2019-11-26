@@ -5,9 +5,6 @@ import GlobalVariables as g
 from tabulate import tabulate
 import copy
 
-# ! TODO: Number of times loop should unroll?
-
-
 # * Getting arguments from command line
 # instFile = sys.argv[1]
 # dataFile = sys.argv[2]
@@ -105,8 +102,9 @@ with open(instFile,'r') as c:
 copyOfInstructions = copy.deepcopy(instructions)
 instrsCopy = copy.deepcopy(copyOfInstructions)
 loopBodyInstructions = {}
-loopBodyInstructions = findLoops(instrsCopy,loopBodyInstructions,labaels_dict)
-
+jumpDirection = {}
+loopBodyInstructions,jumpDirection = findLoops(instrsCopy,loopBodyInstructions,labaels_dict,jumpDirection)
+# I assumed unconditional jumps will always be forward
 
 # * Simulate 
 cntinue = True
@@ -182,9 +180,14 @@ while(cntinue):
                                 g.IDStage.IsBusy = False
                                 g.IDStage.InstrResponsibleUniqueCode = ''
 
-                                instructions = resetRemainingInstructions(index+1,instructions,copyOfInstructions)
-                                instructions[index+2:1]=copy.deepcopy(loopBodyInstructions[inst.operand3])
-                                copyOfInstructions = copy.deepcopy(instructions)
+                                if(jumpDirection[inst.jumpTo] == 'backward'):
+                                    instructions = resetRemainingInstructions(index+1,instructions,copyOfInstructions)
+                                    instructions[index+2:1]=copy.deepcopy(loopBodyInstructions[inst.jumpTo])
+                                    copyOfInstructions = copy.deepcopy(instructions)
+                                else:
+                                    lbl_index = labaels_dict[inst.jumpTo]
+                                    del instructions[index+2:lbl_index] 
+                                    copyOfInstructions = copy.deepcopy(instructions)                                       
                                 instructions[index+1].FT = cycleCount
                                 instructions[index+1].currentStage = 'DONE'
 

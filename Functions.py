@@ -223,13 +223,18 @@ def resetRemainingInstructions(startIndex,instructions,instructions_copy):
 
 
 # finds loops and returns loop + 1 instructions
-def findLoops(instrs,loopInstrs,lbls_dict):
+def findLoops(instrs,loopInstrs,lbls_dict,jumpDirection):
     for lbl,lbl_index in lbls_dict.items():
         for index,i in enumerate(instrs):
-            if(i.name.startswith('B')):
-                if(i.operand3 == lbl):
-                    loopInstrs[lbl] = instrs[lbl_index:index+2]
-    return loopInstrs
+            if(i.name.startswith('B') or i.name == 'J'):
+                if(i.jumpTo == lbl):
+                    if(lbl_index > index):
+                        jumpDirection[lbl] = 'forward'
+                        loopInstrs[lbl] = []
+                    else:
+                        jumpDirection[lbl] = 'backward'
+                        loopInstrs[lbl] = instrs[lbl_index:index+2]
+    return loopInstrs,jumpDirection
 
 def initI_Cache():
     g.ICache['00'] = []
