@@ -162,52 +162,58 @@ while(cntinue):
                 g.IDStage.InstrResponsibleUniqueCode = inst.instrUniqueCode
 
                 if(inst.IDCycleCount <= 0 ): # ID Stage is finished -- and not IsExeStageBusy(inst)
-                    if(not checkIfOperandsAreBusy(inst)):
+                    if(not checkIfResultRegisterBusy(inst)):
+                        if(not checkIfOperandsAreBusy(inst)):
 
-                        inst.prevStage = 'ID'
+                            inst.prevStage = 'ID'
 
-                        if(inst.ExCycleCount == 'Nan'): # i.e instruction is HLT or BNE or BEQ or J
-                            # inst.currentStage = 'DONE'
+                            if(inst.ExCycleCount == 'Nan'): # i.e instruction is HLT or BNE or BEQ or J
+                                # inst.currentStage = 'DONE'
 
-                            # g.IDStage.IsBusy = False
-                            # g.IDStage.InstrResponsibleUniqueCode = ''
+                                # g.IDStage.IsBusy = False
+                                # g.IDStage.InstrResponsibleUniqueCode = ''
 
-                            output = doCalculationIfRequired(inst)
+                                output = doCalculationIfRequired(inst)
 
-                            if(output == 'TAKEN'):
-                                inst.currentStage = 'DONE'
+                                if(output == 'TAKEN'):
+                                    inst.currentStage = 'DONE'
 
-                                g.IDStage.IsBusy = False
-                                g.IDStage.InstrResponsibleUniqueCode = ''
+                                    g.IDStage.IsBusy = False
+                                    g.IDStage.InstrResponsibleUniqueCode = ''
 
-                                if(jumpDirection[inst.jumpTo] == 'backward'):
-                                    instructions = resetRemainingInstructions(index+1,instructions,copyOfInstructions)
-                                    instructions[index+2:1]=copy.deepcopy(loopBodyInstructions[inst.jumpTo])
-                                    copyOfInstructions = copy.deepcopy(instructions)
-                                else:
-                                    lbl_index = labaels_dict[inst.jumpTo]
-                                    del instructions[index+2:lbl_index] 
-                                    copyOfInstructions = copy.deepcopy(instructions)                                       
-                                instructions[index+1].FT = cycleCount
-                                instructions[index+1].currentStage = 'DONE'
+                                    if(jumpDirection[inst.jumpTo] == 'backward'):
+                                        instructions = resetRemainingInstructions(index+1,instructions,copyOfInstructions)
+                                        instructions[index+2:1]=copy.deepcopy(loopBodyInstructions[inst.jumpTo])
+                                        copyOfInstructions = copy.deepcopy(instructions)
+                                    else:
+                                        lbl_index = labaels_dict[inst.jumpTo]
+                                        del instructions[index+2:lbl_index] 
+                                        copyOfInstructions = copy.deepcopy(instructions)                                       
+                                    instructions[index+1].FT = cycleCount
+                                    instructions[index+1].currentStage = 'DONE'
 
-                                #Resetting Result register statuses
-                                setResultRegisterStatus(inst,False)
+                                    #Resetting Result register statuses
+                                    setResultRegisterStatus(inst,False)
 
-                                # Resetting FU statuses
-                                g.FTStage.IsBusy = False
-                                g.IDStage.IsBusy = False
-                                g.IU.IsBusy = False
-                                g.MemStage.IsBusy = False
-                                g.WBStage.IsBusy = False
-                                g.FPAddSubUnitStatus.IsBusy = False
-                                g.FPDivisionUnitStatus.IsBusy = False
-                                g.FPMultiplicationUnitStatus.IsBusy = False
+                                    # Resetting FU statuses
+                                    g.FTStage.IsBusy = False
+                                    g.IDStage.IsBusy = False
+                                    g.IU.IsBusy = False
+                                    g.MemStage.IsBusy = False
+                                    g.WBStage.IsBusy = False
+                                    g.FPAddSubUnitStatus.IsBusy = False
+                                    g.FPDivisionUnitStatus.IsBusy = False
+                                    g.FPMultiplicationUnitStatus.IsBusy = False
 
-                                inst.ID = cycleCount # ID cycleCount is done here to accycleCount for stalls in ID stage
-                                break
+                                    inst.ID = cycleCount # ID cycleCount is done here to accycleCount for stalls in ID stage
+                                    break
+                        else:
+                            inst.RAW = 'Y'
                     else:
-                        inst.RAW = 'Y'
+                        inst.WAW = 'Y'
+                        if(checkIfOperandsAreBusy(inst)):
+                            inst.RAW = 'Y'
+
                     continue
                 
         ### EXE STAGE ###

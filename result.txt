@@ -1,20 +1,20 @@
 Instruction          FT  ID    EX    WB    RAW    WAR    WAW    Struct
 L.D F1,4(R4)          1  2     5     6     N      N      N      N
-L.D F2,8(R5)          2  3     7     8     N      N      N      Y
-ADD.D F4, F6, F2      3  8     12    13    Y      N      N      N
-SUB.D F5, F7, F1      8  9     13    14    N      N      N      N
-MUL.D F6,F1,F5        9  14    20    21    Y      N      N      N
-ADD.D F7,F2,F6       14  21    25    26    Y      N      N      N
-ADD.D F6,F1,F7       21  26    30    31    Y      N      N      N
-DADDI R4,R4,4        26  27    29    30    N      N      N      N
-DADDI R5,R5,4        27  28    31    32    N      N      N      Y
-DSUB R1,R1,R2        28  29    32    33    N      N      N      Y
-J GG                 29  30                N      N      N      N
-ADD.D F4, F6, F2     30                    N      N      N      N
-GG:MUL.D F6,F1,F5    31  32    38    39    N      N      N      N
-ADD.D F7,F2,F6       32  39    43    44    Y      N      N      N
-HLT                  39  40                N      N      N      N
-HLT                  40
+L.D F1,8(R5)          2  6     9     10    N      N      Y      N
+ADD.D F4, F6, F2      6  7     11    12    N      N      N      N
+SUB.D F5, F7, F1      7  10    14    15    Y      N      N      N
+MUL.D F6,F1,F5       10  15    21    22    Y      N      N      N
+ADD.D F7,F2,F6       15  22    26    27    Y      N      N      N
+ADD.D F6,F1,F7       22  27    31    32    Y      N      N      N
+DADDI R4,R4,4        27  28    30    31    N      N      N      N
+DADDI R5,R5,4        28  29    32    33    N      N      N      Y
+DSUB R1,R1,R2        29  30    33    34    N      N      N      Y
+J GG                 30  31                N      N      N      N
+ADD.D F4, F6, F2     31                    N      N      N      N
+GG:MUL.D F6,F1,F5    32  33    39    40    N      N      N      N
+ADD.D F7,F2,F6       33  40    44    45    Y      N      N      N
+HLT                  40  41                N      N      N      N
+HLT                  41
 
 
 Total number of access requests for instruction cache: 0

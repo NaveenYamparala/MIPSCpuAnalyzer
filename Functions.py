@@ -43,6 +43,16 @@ def checkIfFunctionalUnitBusy(instr):
     if(instr.FuncUnitUsed == "FP DIVIDER"):
         return g.FPDivisionUnitStatus.IsBusy and g.FPDivisionUnitStatus.InstrResponsible != instr.full_instr and not g.config.divPipeLined
 
+def checkIfResultRegisterBusy(instr):
+    if(instr.name in ['J','HLT','BNE','BEQ']):
+        return False
+    if(instr.resultRegisterType == 'R'):
+        resRegister = g.Registers[instr.resultRegisterNumber]
+        return resRegister.isBusy and not (instr.instrUniqueCode in resRegister.instructionsResponsible and resRegister.instructionsResponsible.index(instr.instrUniqueCode) in [0])
+    else:
+        resRegister = g.FRegisters[instr.resultRegisterNumber]
+        return resRegister.isBusy and not (instr.instrUniqueCode in resRegister.instructionsResponsible and resRegister.instructionsResponsible.index(instr.instrUniqueCode) in [0])
+
 def setResultRegisterStatus(instr,status):
     if(instr.resultRegisterType == 'R'):
         resultReg = g.Registers[instr.resultRegisterNumber]
