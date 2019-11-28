@@ -5,6 +5,8 @@ import GlobalVariables as g
 from tabulate import tabulate
 import copy
 
+#! ICache block first word number find bug 
+
 # * Getting arguments from command line
 # instFile = sys.argv[1]
 # dataFile = sys.argv[2]
@@ -96,8 +98,9 @@ with open(instFile,'r') as c:
                 instructions.append(Instruction(name, operands, i,g.config,hex_address))
             hex_address = hex(int(hex_address,16) + 4)
 
-# * I-Cache
-# initI_Cache()
+# * Cache
+initI_Cache()
+initD_Cache()
         
 copyOfInstructions = copy.deepcopy(instructions)
 instrsCopy = copy.deepcopy(copyOfInstructions)
@@ -127,8 +130,8 @@ while(cntinue):
             if(g.FTStage.IsBusy and g.FTStage.InstrResponsibleUniqueCode != inst.instrUniqueCode):
                 continue # Can't go to FT Stage
             else: 
-                # if(inst.FTCycleCount == 0 ): # Will execute once per instr # and (index == 0 or instructions[index-1].name != 'HLT')
-                #     inst.FTCycleCount = checkInstrCache(inst)
+                if(inst.FTCycleCount == 0 ): # Will execute once per instr # and (index == 0 or instructions[index-1].name != 'HLT')
+                    inst.FTCycleCount = checkInstrCache(inst)
 
                 inst.currentStage = 'FT'
                 inst.FTCycleCount -= 1
@@ -243,6 +246,9 @@ while(cntinue):
                 if(g.MemStage.IsBusy and g.MemStage.InstrResponsibleUniqueCode != inst.instrUniqueCode):
                     inst.Struct = 'Y'
                 else:
+                    if(inst.memCycles == 0 and inst.currentStage != 'MEM'):
+                        inst.memCycles = checkDataCache(inst,1)
+
                     inst.currentStage = 'MEM'
 
                     # Releasing IU
@@ -257,7 +263,11 @@ while(cntinue):
 
                     inst.memCycles -= 1
                     if(inst.memCycles == 0): # and not g.WBStage.IsBusy
-                        inst.prevStage = 'EXE'
+                        if(inst.name.endswith('.D') and inst.dataWordFetchNumber == 1):
+                            inst.data_ByteAddress += 4
+                            inst.memCycles = checkDataCache(inst,2)
+                        else:
+                            inst.prevStage = 'EXE'
 
             else: ## EXE Stage = ( EXE )
                 if(inst.ExCycleCount == 'Nan'):
@@ -335,11 +345,11 @@ with open(resultFile,'w') as r:
             # arr.append(str(i.IU))
             arr.append('' if i.EX == 0 else str(i.EX))
             arr.append('' if i.WB == 0 else str(i.WB))
-            arr.append(str(i.RAW))
-            arr.append(str(i.WAR))
-            arr.append(str(i.WAW))
-            arr.append(str(i.Struct))
-            
+            arr.append('' if i.ID == '' else str(i.RAW))
+            arr.append('' if i.ID == '' else str(i.WAR))
+            arr.append('' if i.ID == '' else str(i.WAW))
+            arr.append('' if i.ID == '' else str(i.Struct))
+                
         # else:
         #     arr.append(i.full_instr)
         bigArr.append(arr)
@@ -347,4 +357,6 @@ with open(resultFile,'w') as r:
     r.write('\n\n')
     r.write('\nTotal number of access requests for instruction cache: ' + str(g.instructionCacheRequests))
     r.write('\nNumber of instruction cache hits: ' + str(g.instructionCacheHits))
+    r.write('\nTotal number of access requests for data cache: ' + str(g.dataCacheRequests))
+    r.write('\nNumber of data cache hits: ' + str(g.dataCacheHits))
     

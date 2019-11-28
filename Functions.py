@@ -150,6 +150,7 @@ def doCalculationIfRequired(instr):
             op2 = instr.operand2
             op3 = g.Registers[int(instr.operand3[1])].data
             address = int(op2) + twosComplToDec(op3)
+            instr.dataWordAddress = address
             data = g.data[str(address)]
             resReg.data = data
             return 
@@ -157,6 +158,7 @@ def doCalculationIfRequired(instr):
             op2 = instr.operand2
             op3 = g.Registers[int(instr.operand3[1])].data
             resAddress = int(op2) + twosComplToDec(op3)
+            instr.dataWordAddress = address
             resData = g.Registers[int(instr.operand1[1])].data
             g.data[str(resAddress)] = resData
             return 
@@ -224,6 +226,19 @@ def doCalculationIfRequired(instr):
                 result = decToTwosCompl(result)
                 g.Registers[int(instr.operand1[1])].data = result
             return
+    else:
+        if(instr.name == 'L.D'):
+            resReg = g.Registers[int(instr.operand1[1])]
+            op2 = instr.operand2
+            op3 = g.Registers[int(instr.operand3[1])].data
+            address = int(op2) + twosComplToDec(op3)
+            instr.data_ByteAddress = address
+        if(instr.name == 'S.D'):
+            op2 = instr.operand2
+            op3 = g.Registers[int(instr.operand3[1])].data
+            resAddress = int(op2) + twosComplToDec(op3)
+            instr.data_ByteAddress = address
+
 
 def resetRemainingInstructions(startIndex,instructions,instructions_copy):
     sliced_instrs = copy.deepcopy(instructions_copy[startIndex:])
@@ -252,11 +267,21 @@ def initI_Cache():
     g.ICache['10'] = []
     g.ICache['11'] = []
 
+def initD_Cache():
+    g.DCache_0[0] = []
+    g.DCache_0[1] = []
+    g.DCache_1[0] = []
+    g.DCache_1[1] = []
+
+
 def checkInstrCache(instr):
     g.instructionCacheRequests += 1
-    print(instr.name)
-    binaryAddress = '{:010b}'.format(int(instr.hex_address,16))
-    blockNumber = binaryAddress[4:6]
+    # print(instr.name)
+    # binaryAddress = '{:010b}'.format(int(instr.hex_address,16))
+    # blockNumber = binaryAddress[4:6]
+    byteAddress = int(instr.hex_address,16)
+    blockNumber = byteAddress/16
+    blockNumber = '{:02b}'.format(int(blockNumber))
     cacheBlockContents = g.ICache[blockNumber]
     if(instr.hex_address in cacheBlockContents): # Hit
         g.instructionCacheHits += 1
@@ -270,6 +295,41 @@ def checkInstrCache(instr):
             val.append(data)
         g.ICache[blockNumber] = val
         return 2 * (g.config.iCacheCycles + g.config.memCycles)
+
+def checkDataCache(instr,wordNumber):
+    g.dataCacheRequests += 1
+    blockNumberInmemory = instr.data_ByteAddress / 16   # Block number = (byte address)/(bytes per block)
+    setNumber = blockNumberInmemory % 2  # Set number = (Block number) modulo (Number of sets in the cache)
+    instr.dataWordFetchNumber = wordNumber
+    if(setNumber == 0):
+        for key,value in g.DCache_0.items():
+            if(instr.data_ByteAddress in value): # Hit
+                g.dataCacheHits +=1
+                g.LRUBlockOfSet_0 = 1 if key == 0 else 0
+                return g.config.dCacheCycles
+        # Miss
+        data = int(instr.data_ByteAddress/16) * 16 # gives first word address of cache block
+        val = []
+        for i in range(0,4):
+            val.append(data + (i*4))
+        g.DCache_0[g.LRUBlockOfSet_0] = val
+        return 2 * (g.config.dCacheCycles + g.config.memCycles)
+    else:
+        for key,value in g.DCache_1.items():
+            if(instr.data_ByteAddress in value): # Hit
+                g.dataCacheHits +=1
+                g.LRUBlockOfSet_1 = 1 if key == 0 else 0
+                return g.config.dCacheCycles
+        # Miss
+        data = int(instr.data_ByteAddress/16) * 16 # gives first word address of cache block
+        val = []
+        # val.append(data)
+        for i in range(0,4):
+            val.append(data + (i*4))
+        g.DCache_1[g.LRUBlockOfSet_0] = val
+        return 2 * (g.config.dCacheCycles + g.config.memCycles)
+                 
+
 
 def decToTwosCompl(decimal):
     s = bin(decimal & int("1"*32, 2))[2:]

@@ -1,21 +1,32 @@
-Instruction          FT  ID    EX    WB    RAW    WAR    WAW    Struct
-L.D F1,4(R4)          1  2     5     6     N      N      N      N
-L.D F1,8(R5)          2  6     9     10    N      N      Y      N
-ADD.D F4, F6, F2      6  7     11    12    N      N      N      N
-SUB.D F5, F7, F1      7  10    14    15    Y      N      N      N
-MUL.D F6,F1,F5       10  15    21    22    Y      N      N      N
-ADD.D F7,F2,F6       15  22    26    27    Y      N      N      N
-ADD.D F6,F1,F7       22  27    31    32    Y      N      N      N
-DADDI R4,R4,4        27  28    30    31    N      N      N      N
-DADDI R5,R5,4        28  29    32    33    N      N      N      Y
-DSUB R1,R1,R2        29  30    33    34    N      N      N      Y
-J GG                 30  31                N      N      N      N
-ADD.D F4, F6, F2     31                    N      N      N      N
-GG:MUL.D F6,F1,F5    32  33    39    40    N      N      N      N
-ADD.D F7,F2,F6       33  40    44    45    Y      N      N      N
-HLT                  40  41                N      N      N      N
-HLT                  41
+Instruction         FT  ID    EX    WB    RAW    WAR    WAW    Struct
+GG: L.D F1,4(R4)     6  7     15    16    N      N      N      N
+L.D F2,8(R5)         7  8     17    18    N      N      N      Y
+ADD.D F4, F6, F2     8  18    22    23    Y      N      N      N
+SUB.D F5, F7, F1    18  19    23    24    N      N      N      N
+MUL.D F6,F1,F5      24  25    31    32    N      N      N      N
+ADD.D F7,F2,F6      25  32    36    37    Y      N      N      N
+ADD.D F6,F1,F7      32  37    41    42    Y      N      N      N
+DADDI R4,R4,4       37  38    40    41    N      N      N      N
+DADDI R5,R5,4       43  44    46    47    N      N      N      N
+DSUB R1,R1,R2       44  45    47    48    N      N      N      N
+BNE R1,R3,GG        45  48                Y      N      N      N
+HLT                 48
+GG: L.D F1,4(R4)    49  50    53    54    N      N      N      N
+L.D F2,8(R5)        50  51    60    61    N      N      N      Y
+ADD.D F4, F6, F2    51  61    65    66    Y      N      N      N
+SUB.D F5, F7, F1    61  62    66    67    N      N      N      N
+MUL.D F6,F1,F5      62  67    73    74    Y      N      N      N
+ADD.D F7,F2,F6      67  74    78    79    Y      N      N      N
+ADD.D F6,F1,F7      74  79    83    84    Y      N      N      N
+DADDI R4,R4,4       79  80    82    83    N      N      N      N
+DADDI R5,R5,4       80  81    84    85    N      N      N      Y
+DSUB R1,R1,R2       81  82    85    86    N      N      N      Y
+BNE R1,R3,GG        82  86                Y      N      N      N
+HLT                 86  87                N      N      N      N
+HLT                 92
 
 
-Total number of access requests for instruction cache: 0
-Number of instruction cache hits: 0
+Total number of access requests for instruction cache: 25
+Number of instruction cache hits: 21
+Total number of access requests for data cache: 8
+Number of data cache hits: 6
