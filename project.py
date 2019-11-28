@@ -5,8 +5,6 @@ import GlobalVariables as g
 from tabulate import tabulate
 import copy
 
-#! ICache block first word number find bug 
-
 # * Getting arguments from command line
 # instFile = sys.argv[1]
 # dataFile = sys.argv[2]

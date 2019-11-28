@@ -287,7 +287,7 @@ def checkInstrCache(instr):
         g.instructionCacheHits += 1
         return g.config.iCacheCycles
     else: # Miss
-        data = instr.hex_address
+        data = hex(int(int(instr.hex_address,16)/16) * 16) # gives first word address of cache block
         val = []
         val.append(data)
         for i in range(0,3):
