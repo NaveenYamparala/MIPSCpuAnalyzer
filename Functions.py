@@ -299,7 +299,7 @@ def checkInstrCache(instr):
 def checkDataCache(instr,wordNumber):
     g.dataCacheRequests += 1
     blockNumberInmemory = instr.data_ByteAddress / 16   # Block number = (byte address)/(bytes per block)
-    setNumber = blockNumberInmemory % 2  # Set number = (Block number) modulo (Number of sets in the cache)
+    setNumber = int(blockNumberInmemory) % 2  # Set number = (Block number) modulo (Number of sets in the cache)
     instr.dataWordFetchNumber = wordNumber
     if(setNumber == 0):
         for key,value in g.DCache_0.items():
@@ -313,6 +313,7 @@ def checkDataCache(instr,wordNumber):
         for i in range(0,4):
             val.append(data + (i*4))
         g.DCache_0[g.LRUBlockOfSet_0] = val
+        g.LRUBlockOfSet_0 = 1 if g.LRUBlockOfSet_0 == 0 else 0
         return 2 * (g.config.dCacheCycles + g.config.memCycles)
     else:
         for key,value in g.DCache_1.items():
@@ -326,7 +327,8 @@ def checkDataCache(instr,wordNumber):
         # val.append(data)
         for i in range(0,4):
             val.append(data + (i*4))
-        g.DCache_1[g.LRUBlockOfSet_0] = val
+        g.DCache_1[g.LRUBlockOfSet_1] = val
+        g.LRUBlockOfSet_1 = 1 if g.LRUBlockOfSet_1 == 0 else 0
         return 2 * (g.config.dCacheCycles + g.config.memCycles)
                  
 
