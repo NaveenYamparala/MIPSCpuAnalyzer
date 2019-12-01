@@ -44,7 +44,7 @@ def checkIfFunctionalUnitBusy(instr):
         return g.FPDivisionUnitStatus.IsBusy and g.FPDivisionUnitStatus.InstrResponsible != instr.full_instr and not g.config.divPipeLined
 
 def checkIfResultRegisterBusy(instr):
-    if(instr.name in ['J','HLT','BNE','BEQ']):
+    if(instr.name in ['J','HLT','BNE','BEQ','S.D','SW']):
         return False
     if(instr.resultRegisterType == 'R'):
         resRegister = g.Registers[instr.resultRegisterNumber]
@@ -85,6 +85,14 @@ def checkIfOperandsAreBusy(instr):
     reg3Status = False
     if(instr.name in ['J','HLT']):
         return False
+    if(instr.name in ['SW','S.D']):
+        if(instr.operand1[0].upper() == 'R'):
+                op2RRegister = g.Registers[int(instr.operand1[1])]
+                reg2Status = op2RRegister.isBusy and not (instr.instrUniqueCode in op2RRegister.instructionsResponsible and op2RRegister.instructionsResponsible.index(instr.instrUniqueCode) in [0])
+        else:
+            op2FRegister = g.FRegisters[int(instr.operand1[1])]
+            reg2Status = op2FRegister.isBusy and not (instr.instrUniqueCode in op2FRegister.instructionsResponsible and op2FRegister.instructionsResponsible.index(instr.instrUniqueCode) in [0])
+    
     if(instr.name[0].upper() == 'B'):
         if(instr.operand2[0].upper() in ['F','R'] and RepresentsInt(instr.operand2[1])):
             if(instr.operand2[0].upper() == 'R'):
@@ -237,7 +245,7 @@ def doCalculationIfRequired(instr):
             op2 = instr.operand2
             op3 = g.Registers[int(instr.operand3[1])].data
             resAddress = int(op2) + twosComplToDec(op3)
-            instr.data_ByteAddress = address
+            instr.data_ByteAddress = resAddress
 
 
 def resetRemainingInstructions(startIndex,instructions,instructions_copy):
@@ -371,6 +379,15 @@ def checkDataCache(instr,wordNumber):
             g.DCache_1[g.LRUBlockOfSet_1] = val
             g.LRUBlockOfSet_1 = 1 if g.LRUBlockOfSet_1 == 0 else 0
             return 2 * (g.config.dCacheCycles + g.config.memCycles)
+
+def checkMemoryBufferConflict(instructions,index,cycleCount):
+    i = index + 1
+    while i <= len(instructions):
+        if(instructions[i].prevStage == 'FT' and not (g.IDStage.IsBusy and g.IDStage.InstrResponsibleUniqueCode != instructions[i].instrUniqueCode) and instructions[i].currentStage != 'ID'):
+            return True
+        else:
+            return False
+
                  
 
 

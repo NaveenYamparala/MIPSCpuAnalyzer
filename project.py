@@ -139,6 +139,11 @@ while(cntinue):
 
                 if(inst.FTCycleCount == 0):
                     inst.prevStage = 'FT'
+                    if(instructions[index-1].isBranchTaken == True):
+                        inst.currentStage = 'DONE'
+                        g.FTStage.IsBusy = False
+                        g.FTStage.InstrResponsibleUniqueCode = inst.instrUniqueCode
+                        inst.FT = cycleCount
                     break
 
         ### ID STAGE ###
@@ -155,6 +160,11 @@ while(cntinue):
 
                     inst.FT = cycleCount - 1
                     inst.currentStage = 'ID'
+
+                if(instructions[index-1].isBranchTaken == True):
+                    inst.currentStage = 'DONE'
+                    inst.FT = cycleCount
+                    break
 
                 inst.currentStage = 'ID'
                 inst.IDCycleCount -= 1
@@ -178,20 +188,21 @@ while(cntinue):
 
                                 if(output == 'TAKEN'):
                                     inst.currentStage = 'DONE'
+                                    inst.isBranchTaken = True
 
                                     g.IDStage.IsBusy = False
                                     g.IDStage.InstrResponsibleUniqueCode = ''
 
                                     if(jumpDirection[inst.jumpTo] == 'backward'):
-                                        instructions = resetRemainingInstructions(index+1,instructions,copyOfInstructions)
+                                        instructions = resetRemainingInstructions(index+2,instructions,copyOfInstructions)
                                         instructions[index+2:1]=copy.deepcopy(loopBodyInstructions[inst.jumpTo])
                                         copyOfInstructions = copy.deepcopy(instructions)
                                     else:
                                         lbl_index = labaels_dict[inst.jumpTo]
                                         del instructions[index+2:lbl_index] 
                                         copyOfInstructions = copy.deepcopy(instructions)                                       
-                                    instructions[index+1].FT = cycleCount
-                                    instructions[index+1].currentStage = 'DONE'
+                                    # instructions[index+1].FT = cycleCount
+                                    # instructions[index+1].currentStage = 'DONE'
 
                                     #Resetting Result register statuses
                                     setResultRegisterStatus(inst,False)
@@ -207,7 +218,7 @@ while(cntinue):
                                     g.FPMultiplicationUnitStatus.IsBusy = False
 
                                     inst.ID = cycleCount # ID cycleCount is done here to accycleCount for stalls in ID stage
-                                    break
+                                    # break
                         else:
                             inst.RAW = 'Y'
                     else:
@@ -245,6 +256,9 @@ while(cntinue):
                     inst.Struct = 'Y'
                 else:
                     if(inst.memCycles == 0 and inst.currentStage != 'MEM'):
+                        if(checkMemoryBufferConflict(instructions, index,cycleCount)): # returns True if there is buffer conflict
+                            inst.Struct = 'Y'
+                            continue
                         inst.memCycles = checkDataCache(inst,1)
 
                     inst.currentStage = 'MEM'

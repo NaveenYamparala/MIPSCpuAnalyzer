@@ -30,12 +30,13 @@ class Instruction:
         self.ExCycleCount = self.findCycleCount(self.name,config) 
         self.FuncUnitUsed = self.findFU(self.name)
         self.isMemStagePresent = True if name.upper() in ['LW', 'SW', 'L.D', 'S.D','DADD','DADDI','DSUB','DSUBI','AND', 'ANDI', 'OR', 'ORI'] else False
-        self.resultRegisterType = self.operand1[0] if self.operand1 is not None and self.name != 'J' else ''
+        self.resultRegisterType = self.operand1[0] if self.operand1 is not None and self.name not in ['J','SW','S.D'] else ''
         self.resultRegisterNumber = int(self.operand1[1]) if self.operand1 is not None and self.name != 'J' else ''
         self.memCycles = 1 if name.upper() in ['DADD','DADDI','DSUB','DSUBI','AND', 'ANDI', 'OR', 'ORI'] else 0
         self.jumpTo = self.findJumpTo(self.name,operands)
         self.data_ByteAddress = 0
         self.dataWordFetchNumber = 1
+        self.isBranchTaken = False
 
     def findJumpTo(self,name,operands):
         if(name in ['BEQ', 'BNE']):
