@@ -139,7 +139,7 @@ while(cntinue):
 
                 if(inst.FTCycleCount == 0):
                     inst.prevStage = 'FT'
-                    if(instructions[index-1].isBranchTaken == True):
+                    if(index > 0 and instructions[index-1].isBranchTaken == True):
                         inst.currentStage = 'DONE'
                         g.FTStage.IsBusy = False
                         g.FTStage.InstrResponsibleUniqueCode = inst.instrUniqueCode
@@ -161,7 +161,7 @@ while(cntinue):
                     inst.FT = cycleCount - 1
                     inst.currentStage = 'ID'
 
-                if(instructions[index-1].isBranchTaken == True):
+                if(index > 0 and instructions[index-1].isBranchTaken == True):
                     inst.currentStage = 'DONE'
                     inst.FT = cycleCount
                     break
