@@ -12,7 +12,7 @@ def Init():
     global FTStage,IDStage,ExeStage,MemStage,WBStage,IU
     global Registers
     global FRegisters
-    global instructionCacheRequests,instructionCacheHits,dataCacheRequests,dataCacheHits
+    global instructionCacheRequests,instructionCacheHits,dataCacheRequests,dataCacheHits,DirtyBlockOfSet_0,DirtyBlockOfSet_1
 
     config = Configuration()
     IntUnitStatus = FuncUnitInfo(False,'')  # IU
@@ -31,6 +31,8 @@ def Init():
     DCache_1 = {}
     LRUBlockOfSet_0 = 0
     LRUBlockOfSet_1 = 0
+    DirtyBlockOfSet_0 = []
+    DirtyBlockOfSet_1 = []
     data = {}
     Registers = []
     FRegisters = []

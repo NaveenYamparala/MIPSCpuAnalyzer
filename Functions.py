@@ -150,7 +150,7 @@ def doCalculationIfRequired(instr):
             op2 = instr.operand2
             op3 = g.Registers[int(instr.operand3[1])].data
             address = int(op2) + twosComplToDec(op3)
-            instr.dataWordAddress = address
+            instr.data_ByteAddress = address
             data = g.data[str(address)]
             resReg.data = data
             return 
@@ -158,7 +158,7 @@ def doCalculationIfRequired(instr):
             op2 = instr.operand2
             op3 = g.Registers[int(instr.operand3[1])].data
             resAddress = int(op2) + twosComplToDec(op3)
-            instr.dataWordAddress = address
+            instr.data_ByteAddress = resAddress
             resData = g.Registers[int(instr.operand1[1])].data
             g.data[str(resAddress)] = resData
             return 
@@ -301,35 +301,76 @@ def checkDataCache(instr,wordNumber):
     blockNumberInmemory = instr.data_ByteAddress / 16   # Block number = (byte address)/(bytes per block)
     setNumber = int(blockNumberInmemory) % 2  # Set number = (Block number) modulo (Number of sets in the cache)
     instr.dataWordFetchNumber = wordNumber
-    if(setNumber == 0):
-        for key,value in g.DCache_0.items():
-            if(instr.data_ByteAddress in value): # Hit
-                g.dataCacheHits +=1
-                g.LRUBlockOfSet_0 = 1 if key == 0 else 0
-                return g.config.dCacheCycles
-        # Miss
-        data = int(instr.data_ByteAddress/16) * 16 # gives first word address of cache block
-        val = []
-        for i in range(0,4):
-            val.append(data + (i*4))
-        g.DCache_0[g.LRUBlockOfSet_0] = val
-        g.LRUBlockOfSet_0 = 1 if g.LRUBlockOfSet_0 == 0 else 0
-        return 2 * (g.config.dCacheCycles + g.config.memCycles)
-    else:
-        for key,value in g.DCache_1.items():
-            if(instr.data_ByteAddress in value): # Hit
-                g.dataCacheHits +=1
-                g.LRUBlockOfSet_1 = 1 if key == 0 else 0
-                return g.config.dCacheCycles
-        # Miss
-        data = int(instr.data_ByteAddress/16) * 16 # gives first word address of cache block
-        val = []
-        # val.append(data)
-        for i in range(0,4):
-            val.append(data + (i*4))
-        g.DCache_1[g.LRUBlockOfSet_1] = val
-        g.LRUBlockOfSet_1 = 1 if g.LRUBlockOfSet_1 == 0 else 0
-        return 2 * (g.config.dCacheCycles + g.config.memCycles)
+    if(instr.name.startswith('L')): # Loads
+        if(setNumber == 0):
+            for key,value in g.DCache_0.items():
+                if(instr.data_ByteAddress in value): # Hit
+                    g.dataCacheHits +=1
+                    g.LRUBlockOfSet_0 = 1 if key == 0 else 0
+                    return g.config.dCacheCycles
+            # Miss
+            data = int(instr.data_ByteAddress/16) * 16 # gives first word address of cache block
+            val = []
+            for i in range(0,4):
+                val.append(data + (i*4))
+            g.DCache_0[g.LRUBlockOfSet_0] = val
+            g.LRUBlockOfSet_0 = 1 if g.LRUBlockOfSet_0 == 0 else 0
+            return 2 * (g.config.dCacheCycles + g.config.memCycles)
+        else:
+            for key,value in g.DCache_1.items():
+                if(instr.data_ByteAddress in value): # Hit
+                    g.dataCacheHits +=1
+                    g.LRUBlockOfSet_1 = 1 if key == 0 else 0
+                    return g.config.dCacheCycles
+            # Miss
+            data = int(instr.data_ByteAddress/16) * 16 # gives first word address of cache block
+            val = []
+            # val.append(data)
+            for i in range(0,4):
+                val.append(data + (i*4))
+            g.DCache_1[g.LRUBlockOfSet_1] = val
+            g.LRUBlockOfSet_1 = 1 if g.LRUBlockOfSet_1 == 0 else 0
+            return 2 * (g.config.dCacheCycles + g.config.memCycles)
+    else: # Stores
+        if(setNumber == 0):
+            for key,value in g.DCache_0.items():
+                if(instr.data_ByteAddress in value): 
+                    if(not key in g.DirtyBlockOfSet_0): # Hit
+                        g.dataCacheHits +=1
+                        g.LRUBlockOfSet_0 = 1 if key == 0 else 0
+                        g.DirtyBlockOfSet_0.append(key)
+                        return g.config.dCacheCycles
+                    else:
+                        g.DirtyBlockOfSet_0.remove(key)
+                        g.LRUBlockOfSet_0 = key
+            # Miss
+            data = int(instr.data_ByteAddress/16) * 16 # gives first word address of cache block
+            val = []
+            for i in range(0,4):
+                val.append(data + (i*4))
+            g.DCache_0[g.LRUBlockOfSet_0] = val
+            g.LRUBlockOfSet_0 = 1 if g.LRUBlockOfSet_0 == 0 else 0
+            return 2 * (g.config.dCacheCycles + g.config.memCycles)
+        else:
+            for key,value in g.DCache_1.items():
+                if(instr.data_ByteAddress in value): # Hit
+                    if(not key in g.DirtyBlockOfSet_1): # Hit
+                        g.dataCacheHits +=1
+                        g.LRUBlockOfSet_1 = 1 if key == 0 else 0
+                        g.DirtyBlockOfSet_1.append(key)
+                        return g.config.dCacheCycles
+                    else:
+                        g.DirtyBlockOfSet_1.remove(key)
+                        g.LRUBlockOfSet_1 = key
+            # Miss
+            data = int(instr.data_ByteAddress/16) * 16 # gives first word address of cache block
+            val = []
+            # val.append(data)
+            for i in range(0,4):
+                val.append(data + (i*4))
+            g.DCache_1[g.LRUBlockOfSet_1] = val
+            g.LRUBlockOfSet_1 = 1 if g.LRUBlockOfSet_1 == 0 else 0
+            return 2 * (g.config.dCacheCycles + g.config.memCycles)
                  
 
 
