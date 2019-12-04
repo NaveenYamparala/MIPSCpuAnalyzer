@@ -1,32 +1,36 @@
-Instruction         FT  ID    EX    WB    RAW    WAR    WAW    Struct
-GG: L.D F1,4(R4)     6  7     15    16    N      N      N      N
-L.D F2,8(R5)         7  8     17    18    N      N      N      Y
-ADD.D F4, F6, F2     8  18    22    23    Y      N      N      N
-SUB.D F5, F7, F1    18  19    23    24    N      N      N      N
-MUL.D F6,F1,F5      24  25    31    32    N      N      N      N
-ADD.D F7,F2,F6      25  32    36    37    Y      N      N      N
-ADD.D F6,F1,F7      32  37    41    42    Y      N      N      N
-DADDI R4,R4,4       37  38    40    41    N      N      N      N
-DADDI R5,R5,4       43  44    46    47    N      N      N      N
-DSUB R1,R1,R2       44  45    47    48    N      N      N      N
-BNE R1,R3,GG        45  48                Y      N      N      N
-HLT                 48
-GG: L.D F1,4(R4)    49  50    53    54    N      N      N      N
-L.D F2,8(R5)        50  51    60    61    N      N      N      Y
-ADD.D F4, F6, F2    51  61    65    66    Y      N      N      N
-SUB.D F5, F7, F1    61  62    66    67    N      N      N      N
-MUL.D F6,F1,F5      62  67    73    74    Y      N      N      N
-ADD.D F7,F2,F6      67  74    78    79    Y      N      N      N
-ADD.D F6,F1,F7      74  79    83    84    Y      N      N      N
-DADDI R4,R4,4       79  80    82    83    N      N      N      N
-DADDI R5,R5,4       80  81    84    85    N      N      N      Y
-DSUB R1,R1,R2       81  82    85    86    N      N      N      Y
-BNE R1,R3,GG        82  86                Y      N      N      N
-HLT                 86  87                N      N      N      N
-HLT                 92
+Instruction                     FT  ID    EX    WB    RAW    WAR    WAW    Struct
+GG:   L.D         F1,  4(R4)     6  7     15    16    N      N      N      N
+L.D         F2,  8(R5)           7  8     17    18    N      N      N      Y
+ADD.D       F4,  F6,  F2         8  18    22    23    Y      N      N      N
+SUB.D       F5,  F7,  F1        18  19    23    24    N      N      N      N
+MUL.D       F6,  F1, F5         24  25    31    32    N      N      N      N
+ADD.D       F7,  F2,  F6        25  32    36    37    Y      N      N      N
+ADD.D       F6,  F1,  F7        32  37    41    42    Y      N      N      N
+S.D         F6,  0(R8)          37  42    51    52    Y      N      N      N
+DADDI       R4,  R4,  4         43  44    52    53    N      N      N      Y
+DADDI       R5,  R5,  4         44  51    53    54    N      N      N      Y
+DADDI       R8,  R8,  8         51  52    54    55    N      N      N      N
+DSUB        R1,  R1,  R2        52  53    55    56    N      N      N      N
+BNE         R1,  R3,  GG        58  59                N      N      N      N
+HLT                             59
+GG:   L.D         F1,  4(R4)    60  61    64    65    N      N      N      N
+L.D         F2,  8(R5)          61  62    66    67    N      N      N      Y
+ADD.D       F4,  F6,  F2        62  67    71    72    Y      N      N      N
+SUB.D       F5,  F7,  F1        67  68    72    73    N      N      N      N
+MUL.D       F6,  F1, F5         68  73    79    80    Y      N      N      N
+ADD.D       F7,  F2,  F6        73  80    84    85    Y      N      N      N
+ADD.D       F6,  F1,  F7        80  85    89    90    Y      N      N      N
+S.D         F6,  0(R8)          85  90    99    100   Y      N      N      N
+DADDI       R4,  R4,  4         90  91    100   101   N      N      N      Y
+DADDI       R5,  R5,  4         91  99    101   102   N      N      N      Y
+DADDI       R8,  R8,  8         99  100   102   103   N      N      N      N
+DSUB        R1,  R1,  R2       100  101   103   104   N      N      N      N
+BNE         R1,  R3,  GG       101  104               Y      N      N      N
+HLT                            104  105               N      N      N      N
+HLT                            105
 
 
-Total number of access requests for instruction cache: 25
-Number of instruction cache hits: 21
-Total number of access requests for data cache: 8
-Number of data cache hits: 6
+Total number of access requests for instruction cache: 29
+Number of instruction cache hits: 25
+Total number of access requests for data cache: 12
+Number of data cache hits: 9

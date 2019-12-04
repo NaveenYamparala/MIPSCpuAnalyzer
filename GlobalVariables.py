@@ -13,6 +13,7 @@ def Init():
     global Registers
     global FRegisters
     global instructionCacheRequests,instructionCacheHits,dataCacheRequests,dataCacheHits,DirtyBlockOfSet_0,DirtyBlockOfSet_1
+    global memoryBus
 
     config = Configuration()
     IntUnitStatus = FuncUnitInfo(False,'')  # IU
@@ -20,6 +21,7 @@ def Init():
     FPAddSubUnitStatus = FuncUnitInfo(False,'')
     FPMultiplicationUnitStatus = FuncUnitInfo(False,'')
     FPDivisionUnitStatus = FuncUnitInfo(False,'')
+    memoryBus = FuncUnitInfo(False,'')
     FTStage = StageInfo(False,'')
     IDStage = StageInfo(False,'')
     ExeStage = StageInfo(False,'')

@@ -115,6 +115,8 @@ end = 0
 while(cntinue):
     cycleCount += 1
     doneCount = 0
+    if(cycleCount > 1000):
+        cntinue = False
     for index,inst in enumerate(instructions):
         end = 0
         if(inst.currentStage == 'DONE'):
@@ -129,7 +131,12 @@ while(cntinue):
                 continue # Can't go to FT Stage
             else: 
                 if(inst.FTCycleCount == 0 ): # Will execute once per instr # and (index == 0 or instructions[index-1].name != 'HLT')
-                    inst.FTCycleCount = checkInstrCache(inst)
+                    inst.FTCycleCount,isMemBusBusy = checkInstrCache(inst)
+                    if(isMemBusBusy):
+                        g.instructionCacheRequests -= 1
+                        inst.FTCycleCount = 0
+                        inst.Struct = 'Y'
+                        continue
 
                 inst.currentStage = 'FT'
                 inst.FTCycleCount -= 1
@@ -139,6 +146,12 @@ while(cntinue):
 
                 if(inst.FTCycleCount == 0):
                     inst.prevStage = 'FT'
+
+                    #Releasing Mem bus
+                    if(g.memoryBus.IsBusy and g.memoryBus.instrResponsible == inst.instrUniqueCode):
+                        g.memoryBus.IsBusy = False
+                        g.memoryBus.instrResponsible = ''
+                        
                     if(index > 0 and instructions[index-1].isBranchTaken == True):
                         inst.currentStage = 'DONE'
                         g.FTStage.IsBusy = False
@@ -256,10 +269,14 @@ while(cntinue):
                     inst.Struct = 'Y'
                 else:
                     if(inst.memCycles == 0 and inst.currentStage != 'MEM'):
-                        if(checkMemoryBufferConflict(instructions, index,cycleCount)): # returns True if there is buffer conflict
+                        inst.memCycles,isMemBusBusy = checkDataCache(inst,1)
+                        if(isMemBusBusy):
+                            g.dataCacheRequests -= 1
+                            inst.memCycles = 0
                             inst.Struct = 'Y'
                             continue
-                        inst.memCycles = checkDataCache(inst,1)
+                        if(inst.name.startswith('S') and inst.memCycles != g.config.dCacheCycles): # Store instruction and its Miss
+                            inst.memCycles += 1 # For store first word write takes extra cycle
 
                     inst.currentStage = 'MEM'
 
@@ -277,7 +294,15 @@ while(cntinue):
                     if(inst.memCycles == 0): # and not g.WBStage.IsBusy
                         if(inst.name.endswith('.D') and inst.dataWordFetchNumber == 1):
                             inst.data_ByteAddress += 4
-                            inst.memCycles = checkDataCache(inst,2)
+                            inst.memCycles,isMemBusBusy = checkDataCache(inst,2)
+                            if(isMemBusBusy):
+                                inst.Struct = 'Y'
+                                g.dataCacheRequests -= 1
+                                inst.memCycles = 1
+                                inst.dataWordFetchNumber = 1
+                                continue
+                            if(inst.name.startswith('S') and inst.memCycles != g.config.dCacheCycles): # Store instruction and its Miss
+                                inst.memCycles += 1 # For store first word write takes extra cycle
                         else:
                             inst.prevStage = 'EXE'
 
@@ -312,7 +337,11 @@ while(cntinue):
                 inst.Struct = 'Y'
                 continue 
             else:
-                
+                #Release Mem bus
+                if(g.memoryBus.IsBusy and g.memoryBus.instrResponsible == inst.instrUniqueCode):
+                    g.memoryBus.IsBusy = False
+                    g.memoryBus.instrResponsible = ''
+
                 inst.EX = cycleCount - 1
 
                 #Occupying WB unit

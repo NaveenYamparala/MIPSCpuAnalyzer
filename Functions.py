@@ -293,8 +293,16 @@ def checkInstrCache(instr):
     cacheBlockContents = g.ICache[blockNumber]
     if(instr.hex_address in cacheBlockContents): # Hit
         g.instructionCacheHits += 1
-        return g.config.iCacheCycles
+        return g.config.iCacheCycles, False
     else: # Miss
+        if(g.memoryBus.IsBusy):
+            g.instructionCacheHits -= 1
+            return g.config.iCacheCycles, True
+
+        # Setting memory bus busy
+        g.memoryBus.IsBusy = True
+        g.memoryBus.instrResponsible = instr.instrUniqueCode
+        
         data = hex(int(int(instr.hex_address,16)/16) * 16) # gives first word address of cache block
         val = []
         val.append(data)
@@ -302,7 +310,7 @@ def checkInstrCache(instr):
             data = hex(int(data,16) + 4)
             val.append(data)
         g.ICache[blockNumber] = val
-        return 2 * (g.config.iCacheCycles + g.config.memCycles)
+        return 2 * (g.config.iCacheCycles + g.config.memCycles), False
 
 def checkDataCache(instr,wordNumber):
     g.dataCacheRequests += 1
@@ -315,22 +323,36 @@ def checkDataCache(instr,wordNumber):
                 if(instr.data_ByteAddress in value): # Hit
                     g.dataCacheHits +=1
                     g.LRUBlockOfSet_0 = 1 if key == 0 else 0
-                    return g.config.dCacheCycles
+                    return g.config.dCacheCycles, False
             # Miss
+            if(g.memoryBus.IsBusy):
+                return g.config.dCacheCycles, True
+
+            # Setting memory bus busy
+            g.memoryBus.IsBusy = True
+            g.memoryBus.instrResponsible = instr.instrUniqueCode
+            
             data = int(instr.data_ByteAddress/16) * 16 # gives first word address of cache block
             val = []
             for i in range(0,4):
                 val.append(data + (i*4))
             g.DCache_0[g.LRUBlockOfSet_0] = val
             g.LRUBlockOfSet_0 = 1 if g.LRUBlockOfSet_0 == 0 else 0
-            return 2 * (g.config.dCacheCycles + g.config.memCycles)
+            return 2 * (g.config.dCacheCycles + g.config.memCycles), False
         else:
             for key,value in g.DCache_1.items():
                 if(instr.data_ByteAddress in value): # Hit
                     g.dataCacheHits +=1
                     g.LRUBlockOfSet_1 = 1 if key == 0 else 0
-                    return g.config.dCacheCycles
+                    return g.config.dCacheCycles, False
             # Miss
+            if(g.memoryBus.IsBusy and g.memoryBus.instrResponsible != instr.instrUniqueCode):
+                return g.config.dCacheCycles, True
+            
+            # Setting memory bus busy
+            g.memoryBus.IsBusy = True
+            g.memoryBus.instrResponsible = instr.instrUniqueCode
+
             data = int(instr.data_ByteAddress/16) * 16 # gives first word address of cache block
             val = []
             # val.append(data)
@@ -338,7 +360,7 @@ def checkDataCache(instr,wordNumber):
                 val.append(data + (i*4))
             g.DCache_1[g.LRUBlockOfSet_1] = val
             g.LRUBlockOfSet_1 = 1 if g.LRUBlockOfSet_1 == 0 else 0
-            return 2 * (g.config.dCacheCycles + g.config.memCycles)
+            return 2 * (g.config.dCacheCycles + g.config.memCycles), False
     else: # Stores
         if(setNumber == 0):
             for key,value in g.DCache_0.items():
@@ -347,18 +369,25 @@ def checkDataCache(instr,wordNumber):
                         g.dataCacheHits +=1
                         g.LRUBlockOfSet_0 = 1 if key == 0 else 0
                         g.DirtyBlockOfSet_0.append(key)
-                        return g.config.dCacheCycles
+                        return g.config.dCacheCycles, False
                     else:
                         g.DirtyBlockOfSet_0.remove(key)
                         g.LRUBlockOfSet_0 = key
             # Miss
+            if(g.memoryBus.IsBusy):
+                return g.config.dCacheCycles, True
+            
+            # Setting memory bus busy
+            g.memoryBus.IsBusy = True
+            g.memoryBus.instrResponsible = instr.instrUniqueCode
+
             data = int(instr.data_ByteAddress/16) * 16 # gives first word address of cache block
             val = []
             for i in range(0,4):
                 val.append(data + (i*4))
             g.DCache_0[g.LRUBlockOfSet_0] = val
             g.LRUBlockOfSet_0 = 1 if g.LRUBlockOfSet_0 == 0 else 0
-            return 2 * (g.config.dCacheCycles + g.config.memCycles)
+            return 2 * (g.config.dCacheCycles + g.config.memCycles), False
         else:
             for key,value in g.DCache_1.items():
                 if(instr.data_ByteAddress in value): # Hit
@@ -366,11 +395,18 @@ def checkDataCache(instr,wordNumber):
                         g.dataCacheHits +=1
                         g.LRUBlockOfSet_1 = 1 if key == 0 else 0
                         g.DirtyBlockOfSet_1.append(key)
-                        return g.config.dCacheCycles
+                        return g.config.dCacheCycles, False
                     else:
                         g.DirtyBlockOfSet_1.remove(key)
                         g.LRUBlockOfSet_1 = key
             # Miss
+            if(g.memoryBus.IsBusy):
+                return g.config.dCacheCycles, True
+            
+            # Setting memory bus busy
+            g.memoryBus.IsBusy = True
+            g.memoryBus.instrResponsible = instr.instrUniqueCode
+
             data = int(instr.data_ByteAddress/16) * 16 # gives first word address of cache block
             val = []
             # val.append(data)
@@ -378,7 +414,7 @@ def checkDataCache(instr,wordNumber):
                 val.append(data + (i*4))
             g.DCache_1[g.LRUBlockOfSet_1] = val
             g.LRUBlockOfSet_1 = 1 if g.LRUBlockOfSet_1 == 0 else 0
-            return 2 * (g.config.dCacheCycles + g.config.memCycles)
+            return 2 * (g.config.dCacheCycles + g.config.memCycles), False
 
 def checkMemoryBufferConflict(instructions,index,cycleCount):
     i = index + 1
