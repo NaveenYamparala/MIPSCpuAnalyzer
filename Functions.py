@@ -364,15 +364,15 @@ def checkDataCache(instr,wordNumber):
     else: # Stores
         if(setNumber == 0):
             for key,value in g.DCache_0.items():
-                if(instr.data_ByteAddress in value): 
-                    if(not key in g.DirtyBlockOfSet_0): # Hit
-                        g.dataCacheHits +=1
-                        g.LRUBlockOfSet_0 = 1 if key == 0 else 0
+                if(instr.data_ByteAddress in value): # Hit 
+                    g.dataCacheHits +=1
+                    g.LRUBlockOfSet_0 = 1 if key == 0 else 0
+                    if(not key in g.DirtyBlockOfSet_0): # Make it dirty
                         g.DirtyBlockOfSet_0.append(key)
-                        return g.config.dCacheCycles, False
-                    else:
-                        g.DirtyBlockOfSet_0.remove(key)
-                        g.LRUBlockOfSet_0 = key
+                    return g.config.dCacheCycles, False
+                    # else:
+                    #     g.DirtyBlockOfSet_0.remove(key)
+                    #     g.LRUBlockOfSet_0 = key
             # Miss
             if(g.memoryBus.IsBusy):
                 return g.config.dCacheCycles, True
@@ -386,19 +386,21 @@ def checkDataCache(instr,wordNumber):
             for i in range(0,4):
                 val.append(data + (i*4))
             g.DCache_0[g.LRUBlockOfSet_0] = val
+            if(g.LRUBlockOfSet_0 in g.DirtyBlockOfSet_0): # Removing dirty bit
+                g.DirtyBlockOfSet_0.remove(g.LRUBlockOfSet_0)
             g.LRUBlockOfSet_0 = 1 if g.LRUBlockOfSet_0 == 0 else 0
             return 2 * (g.config.dCacheCycles + g.config.memCycles), False
         else:
             for key,value in g.DCache_1.items():
                 if(instr.data_ByteAddress in value): # Hit
-                    if(not key in g.DirtyBlockOfSet_1): # Hit
-                        g.dataCacheHits +=1
-                        g.LRUBlockOfSet_1 = 1 if key == 0 else 0
+                    g.dataCacheHits +=1
+                    g.LRUBlockOfSet_1 = 1 if key == 0 else 0
+                    if(not key in g.DirtyBlockOfSet_1): # Make it dirty
                         g.DirtyBlockOfSet_1.append(key)
-                        return g.config.dCacheCycles, False
-                    else:
-                        g.DirtyBlockOfSet_1.remove(key)
-                        g.LRUBlockOfSet_1 = key
+                    return g.config.dCacheCycles, False
+                    # else:
+                    #     g.DirtyBlockOfSet_1.remove(key)
+                    #     g.LRUBlockOfSet_1 = key
             # Miss
             if(g.memoryBus.IsBusy):
                 return g.config.dCacheCycles, True
@@ -413,6 +415,8 @@ def checkDataCache(instr,wordNumber):
             for i in range(0,4):
                 val.append(data + (i*4))
             g.DCache_1[g.LRUBlockOfSet_1] = val
+            if(g.LRUBlockOfSet_1 in g.DirtyBlockOfSet_1): # Removing dirty bit
+                g.DirtyBlockOfSet_1.remove(key)
             g.LRUBlockOfSet_1 = 1 if g.LRUBlockOfSet_1 == 0 else 0
             return 2 * (g.config.dCacheCycles + g.config.memCycles), False
 

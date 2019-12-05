@@ -221,14 +221,14 @@ while(cntinue):
                                     setResultRegisterStatus(inst,False)
 
                                     # Resetting FU statuses
-                                    g.FTStage.IsBusy = False
-                                    g.IDStage.IsBusy = False
-                                    g.IU.IsBusy = False
-                                    g.MemStage.IsBusy = False
-                                    g.WBStage.IsBusy = False
-                                    g.FPAddSubUnitStatus.IsBusy = False
-                                    g.FPDivisionUnitStatus.IsBusy = False
-                                    g.FPMultiplicationUnitStatus.IsBusy = False
+                                    # g.FTStage.IsBusy = False
+                                    # g.IDStage.IsBusy = False
+                                    # g.IU.IsBusy = False
+                                    # g.MemStage.IsBusy = False
+                                    # g.WBStage.IsBusy = False
+                                    # g.FPAddSubUnitStatus.IsBusy = False
+                                    # g.FPDivisionUnitStatus.IsBusy = False
+                                    # g.FPMultiplicationUnitStatus.IsBusy = False
 
                                     inst.ID = cycleCount # ID cycleCount is done here to accycleCount for stalls in ID stage
                                     # break
