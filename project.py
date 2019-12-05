@@ -269,7 +269,7 @@ while(cntinue):
                     inst.Struct = 'Y'
                 else:
                     if(inst.memCycles == 0 and inst.currentStage != 'MEM'):
-                        inst.memCycles,isMemBusBusy = checkDataCache(inst,1)
+                        inst.memCycles,isMemBusBusy = checkDataCache(inst,1,instructions,index,cycleCount)
                         if(isMemBusBusy):
                             g.dataCacheRequests -= 1
                             inst.memCycles = 0
@@ -294,7 +294,7 @@ while(cntinue):
                     if(inst.memCycles == 0): # and not g.WBStage.IsBusy
                         if(inst.name.endswith('.D') and inst.dataWordFetchNumber == 1):
                             inst.data_ByteAddress += 4
-                            inst.memCycles,isMemBusBusy = checkDataCache(inst,2)
+                            inst.memCycles,isMemBusBusy = checkDataCache(inst,2,instructions,index,cycleCount)
                             if(isMemBusBusy):
                                 inst.Struct = 'Y'
                                 g.dataCacheRequests -= 1

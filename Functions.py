@@ -295,7 +295,7 @@ def checkInstrCache(instr):
         g.instructionCacheHits += 1
         return g.config.iCacheCycles, False
     else: # Miss
-        if(g.memoryBus.IsBusy):
+        if(g.memoryBus.IsBusy and g.memoryBus.instrResponsible != instr.instrUniqueCode):
             g.instructionCacheHits -= 1
             return g.config.iCacheCycles, True
 
@@ -312,7 +312,7 @@ def checkInstrCache(instr):
         g.ICache[blockNumber] = val
         return 2 * (g.config.iCacheCycles + g.config.memCycles), False
 
-def checkDataCache(instr,wordNumber):
+def checkDataCache(instr,wordNumber,instructions,index,cycleCount):
     g.dataCacheRequests += 1
     blockNumberInmemory = instr.data_ByteAddress / 16   # Block number = (byte address)/(bytes per block)
     setNumber = int(blockNumberInmemory) % 2  # Set number = (Block number) modulo (Number of sets in the cache)
@@ -325,7 +325,7 @@ def checkDataCache(instr,wordNumber):
                     g.LRUBlockOfSet_0 = 1 if key == 0 else 0
                     return g.config.dCacheCycles, False
             # Miss
-            if(g.memoryBus.IsBusy):
+            if((g.memoryBus.IsBusy and g.memoryBus.instrResponsible != instr.instrUniqueCode) or checkMemoryBufferConflict(instructions,index,cycleCount)):
                 return g.config.dCacheCycles, True
 
             # Setting memory bus busy
@@ -337,6 +337,8 @@ def checkDataCache(instr,wordNumber):
             for i in range(0,4):
                 val.append(data + (i*4))
             g.DCache_0[g.LRUBlockOfSet_0] = val
+            if(g.LRUBlockOfSet_0 in g.DirtyBlockOfSet_0): 
+                return 4 * (g.config.dCacheCycles + g.config.memCycles), False
             g.LRUBlockOfSet_0 = 1 if g.LRUBlockOfSet_0 == 0 else 0
             return 2 * (g.config.dCacheCycles + g.config.memCycles), False
         else:
@@ -346,7 +348,7 @@ def checkDataCache(instr,wordNumber):
                     g.LRUBlockOfSet_1 = 1 if key == 0 else 0
                     return g.config.dCacheCycles, False
             # Miss
-            if(g.memoryBus.IsBusy and g.memoryBus.instrResponsible != instr.instrUniqueCode):
+            if((g.memoryBus.IsBusy and g.memoryBus.instrResponsible != instr.instrUniqueCode) or checkMemoryBufferConflict(instructions,index,cycleCount)):
                 return g.config.dCacheCycles, True
             
             # Setting memory bus busy
@@ -359,6 +361,8 @@ def checkDataCache(instr,wordNumber):
             for i in range(0,4):
                 val.append(data + (i*4))
             g.DCache_1[g.LRUBlockOfSet_1] = val
+            if(g.LRUBlockOfSet_1 in g.DirtyBlockOfSet_1): 
+                return 4 * (g.config.dCacheCycles + g.config.memCycles), False
             g.LRUBlockOfSet_1 = 1 if g.LRUBlockOfSet_1 == 0 else 0
             return 2 * (g.config.dCacheCycles + g.config.memCycles), False
     else: # Stores
@@ -374,7 +378,7 @@ def checkDataCache(instr,wordNumber):
                     #     g.DirtyBlockOfSet_0.remove(key)
                     #     g.LRUBlockOfSet_0 = key
             # Miss
-            if(g.memoryBus.IsBusy):
+            if((g.memoryBus.IsBusy and g.memoryBus.instrResponsible != instr.instrUniqueCode) or checkMemoryBufferConflict(instructions,index,cycleCount)):
                 return g.config.dCacheCycles, True
             
             # Setting memory bus busy
@@ -387,7 +391,8 @@ def checkDataCache(instr,wordNumber):
                 val.append(data + (i*4))
             g.DCache_0[g.LRUBlockOfSet_0] = val
             if(g.LRUBlockOfSet_0 in g.DirtyBlockOfSet_0): # Removing dirty bit
-                g.DirtyBlockOfSet_0.remove(g.LRUBlockOfSet_0)
+                # g.DirtyBlockOfSet_0.remove(g.LRUBlockOfSet_0)
+                return 4 * (g.config.dCacheCycles + g.config.memCycles), False
             g.LRUBlockOfSet_0 = 1 if g.LRUBlockOfSet_0 == 0 else 0
             return 2 * (g.config.dCacheCycles + g.config.memCycles), False
         else:
@@ -402,7 +407,7 @@ def checkDataCache(instr,wordNumber):
                     #     g.DirtyBlockOfSet_1.remove(key)
                     #     g.LRUBlockOfSet_1 = key
             # Miss
-            if(g.memoryBus.IsBusy):
+            if((g.memoryBus.IsBusy and g.memoryBus.instrResponsible != instr.instrUniqueCode) or checkMemoryBufferConflict(instructions,index,cycleCount)):
                 return g.config.dCacheCycles, True
             
             # Setting memory bus busy
@@ -416,19 +421,36 @@ def checkDataCache(instr,wordNumber):
                 val.append(data + (i*4))
             g.DCache_1[g.LRUBlockOfSet_1] = val
             if(g.LRUBlockOfSet_1 in g.DirtyBlockOfSet_1): # Removing dirty bit
-                g.DirtyBlockOfSet_1.remove(key)
+                # g.DirtyBlockOfSet_1.remove(key)
+                return 4 * (g.config.dCacheCycles + g.config.memCycles), False
             g.LRUBlockOfSet_1 = 1 if g.LRUBlockOfSet_1 == 0 else 0
             return 2 * (g.config.dCacheCycles + g.config.memCycles), False
 
+# Returns True if the ICache and DCache tries to access the memory bus in the same cycle 
 def checkMemoryBufferConflict(instructions,index,cycleCount):
     i = index + 1
     while i <= len(instructions):
         if(instructions[i].prevStage == 'FT' and not (g.IDStage.IsBusy and g.IDStage.InstrResponsibleUniqueCode != instructions[i].instrUniqueCode) and instructions[i].currentStage != 'ID'):
-            return True
+            if(instructions[i].FTCycleCount == 0 ): 
+                isMemBusBusy = checkICache(instructions[i])
+                if(isMemBusBusy):
+                    return True
+                else:
+                    return False
         else:
             return False
 
-                 
+def checkICache(instr):
+    byteAddress = int(instr.hex_address,16)
+    blockNumber = byteAddress/16
+    blockNumber = '{:02b}'.format(int(blockNumber))
+    cacheBlockContents = g.ICache[blockNumber]
+    if(instr.hex_address in cacheBlockContents): # Hit
+        return False
+    else: # Miss
+        if(g.memoryBus.IsBusy and g.memoryBus.instrResponsible != instr.instrUniqueCode):
+            return True
+        return False
 
 
 def decToTwosCompl(decimal):
