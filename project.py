@@ -155,9 +155,10 @@ while(cntinue):
                     if(index > 0 and instructions[index-1].isBranchTaken == True):
                         inst.currentStage = 'DONE'
                         g.FTStage.IsBusy = False
-                        g.FTStage.InstrResponsibleUniqueCode = inst.instrUniqueCode
+                        g.FTStage.InstrResponsibleUniqueCode = ''
                         inst.FT = cycleCount
                     break
+                break
 
         ### ID STAGE ###
         elif(inst.prevStage == 'FT'):
@@ -206,7 +207,7 @@ while(cntinue):
                                     g.IDStage.IsBusy = False
                                     g.IDStage.InstrResponsibleUniqueCode = ''
 
-                                    if(jumpDirection[inst.jumpTo] == 'backward'):
+                                    if(jumpDirection[inst.jumpTo] == 'backward' and inst.name != 'J'):
                                         instructions = resetRemainingInstructions(index+2,instructions,copyOfInstructions)
                                         instructions[index+2:1]=copy.deepcopy(loopBodyInstructions[inst.jumpTo])
                                         copyOfInstructions = copy.deepcopy(instructions)
@@ -220,15 +221,10 @@ while(cntinue):
                                     #Resetting Result register statuses
                                     setResultRegisterStatus(inst,False)
 
-                                    # Resetting FU statuses
-                                    # g.FTStage.IsBusy = False
-                                    # g.IDStage.IsBusy = False
-                                    # g.IU.IsBusy = False
-                                    # g.MemStage.IsBusy = False
-                                    # g.WBStage.IsBusy = False
-                                    # g.FPAddSubUnitStatus.IsBusy = False
-                                    # g.FPDivisionUnitStatus.IsBusy = False
-                                    # g.FPMultiplicationUnitStatus.IsBusy = False
+                                    # # Reset FT stage status set by next instruction
+                                    # if(instructions[index+1].instrUniqueCode in g.FTStage.InstrResponsibleUniqueCode and g.FTStage.IsBusy):
+                                    #     g.FTStage.IsBusy = False 
+                                    #     g.FTStage.InstrResponsibleUniqueCode = '' 
 
                                     inst.ID = cycleCount # ID cycleCount is done here to accycleCount for stalls in ID stage
                                     # break
